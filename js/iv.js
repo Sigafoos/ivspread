@@ -1,6 +1,7 @@
 $(document).ready(loadGamemaster)
 
 var gamemaster;
+var list = [];
 
 var cpm = [
 	0.094,
@@ -88,18 +89,18 @@ var spinner = '<div class="spinner-border" role="status"><span class="sr-only">L
 
 function loadGamemaster() {
 	gamemaster = JSON.parse(localStorage.getItem("gamemaster"));
-	var list = [];
 
 	if (!gamemaster) {
 		downloadGamemaster();
 		return;
 	}
 
+	list = [];
 	gamemaster.forEach(function(p) {
 		list.push(p.speciesName);
 	});
 	list.sort();
-	populateDropdown(list);
+	$('#pokemon').typeahead({ source: list });
 }
 
 function downloadGamemaster() {
@@ -108,22 +109,12 @@ function downloadGamemaster() {
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState == XMLHttpRequest.DONE) {
 			var gm = JSON.parse(xhr.responseText);
-			localStorage.setItem("gamemaster", JSON.stringify(gm.pokemon));
+			localStorage.setItem("gamemaster", JSON.stringify(gm.pokemon)); loadGamemaster();
 			loadGamemaster();
 		}
 	};
 	xhr.open("GET", url);
 	xhr.send();
-}
-
-function populateDropdown(list) {
-	$("#pokemon").find(":first-child").remove();
-	list.forEach(function(p) {
-		$("#pokemon").append($("<option>", {
-			value: p,
-			text: p
-		}));
-	});
 }
 
 $("form").submit(function(e) {
