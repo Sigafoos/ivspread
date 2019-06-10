@@ -151,9 +151,9 @@ function getIVSpread(pokemon) {
 			for (let hp = 0; hp < 16; hp++) {
 				for (let level = cpm.length-1; level >= 0; level--) {
 					let data = {ivs: {atk, def, hp}, level, ...pokemon.baseStats};
-					let c = cp(data);
-					if (c <= 1500) {
-						spread.push({ivs: {atk, def, hp}, level, cp: c, product: statProduct(data)});
+					let calculated = cp(data);
+					if (calculated.cp <= 1500) {
+						spread.push({ivs: {atk, def, hp}, level, product: statProduct(calculated), ...calculated});
 						break;
 					}
 				}
@@ -169,21 +169,20 @@ function getIVSpread(pokemon) {
 
 function cp(data) {
 	let { atk, def, hp, level, ivs } = data;
-	let attack = Math.trunc(100 * (atk + ivs.atk) * cpm[level]) / 100,
-		defense = Math.trunc(100* (def + ivs.def) * cpm[level]) / 100,
-		stamina = Math.trunc(100 * (hp + ivs.hp) * cpm[level]) / 100;
+	let attack = (atk + ivs.atk) * cpm[level],
+		defense = (def + ivs.def) * cpm[level],
+		stamina = (hp + ivs.hp) * cpm[level];
 
 	var cp = Math.floor(attack * defense**0.5 * stamina**0.5 / 10);
-	return (cp < 10) ? 10 : cp;
+	hp = Math.round(stamina);
+	cp = (cp < 10) ? 10 : cp;
+	return { cp, attack, defense, hp };
 }
 
 function statProduct(data) {
-	let { atk, def, hp, level, ivs } = data;
-	let attack = Math.trunc(100 * (atk + ivs.atk) * cpm[level]) / 100,
-		defense = Math.trunc(100* (def + ivs.def) * cpm[level]) / 100,
-		stamina = Math.trunc(100 * (hp + ivs.hp) * cpm[level]) / 100;
+	let { attack, defense, hp } = data;
 
-	return attack * defense * stamina;
+	return attack * defense * hp;
 }
 
 function populateTable(spread, ivs) {
@@ -196,6 +195,9 @@ function populateTable(spread, ivs) {
 					<th scope="col">Level</th>
 					<th scope="col">CP</th>
 					<th scope="col">IVs</th>
+					<th scope="col">Attack</th>
+					<th scope="col">Defense</th>
+					<th scope="col">HP</th>
 					<th scope="col">Stat Product</th>
 					<th scope="col">Percentage</th>
 				</tr>
@@ -236,6 +238,9 @@ function getRow(position, data, best, highlight) {
 	tr.append("<td>" + ((data.level / 2) + 1) + "</td>");
 	tr.append("<td>" + data.cp + "</td>");
 	tr.append("<td>" + data.ivs.atk + "/" + data.ivs.def + "/" + data.ivs.hp + "</td>");
+	tr.append("<td>" + data.attack + "</td>");
+	tr.append("<td>" + data.defense + "</td>");
+	tr.append("<td>" + data.hp + "</td>");
 	tr.append("<td>" + data.product + "</td>");
 	tr.append("<td>" + percentage + "%</td>");
 
