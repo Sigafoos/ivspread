@@ -174,7 +174,7 @@ function cp(data) {
 		stamina = (hp + ivs.hp) * cpm[level];
 
 	var cp = Math.floor(attack * defense**0.5 * stamina**0.5 / 10);
-	hp = Math.round(stamina);
+	hp = Math.floor(stamina);
 	cp = (cp < 10) ? 10 : cp;
 	return { cp, attack, defense, hp };
 }
