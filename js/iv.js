@@ -86,15 +86,36 @@ var cpm = [
 ];
 
 var spinner = '<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>';
+var commit, gamemaster;
 
 function loadGamemaster() {
-	gamemaster = JSON.parse(localStorage.getItem("gamemaster"));
 
-	if (!gamemaster) {
-		downloadGamemaster();
+	if (commit && gamemaster) {
+		loadPage();
 		return;
 	}
 
+	gamemaster = JSON.parse(localStorage.getItem("gamemaster"));
+	commit = localStorage.getItem('commit');
+
+	var url = 'https://api.github.com/repos/pvpoke/pvpoke/commits?path=src%2Fdata%2Fgamemaster.json';
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState == XMLHttpRequest.DONE) {
+			var resp = JSON.parse(xhr.responseText);
+			if (!commit || !!gamemaster || (resp && resp.sha && resp.sha != commit)) {
+				downloadGamemaster();
+				localStorage.setItem('commit', resp.sha);
+				return;
+			}
+			loadPage();
+		}
+	};
+	xhr.open("GET", url);
+	xhr.send();
+}
+
+function loadPage() {
 	list = [];
 	gamemaster.forEach(function(p) {
 		list.push(p.speciesName);
@@ -104,6 +125,8 @@ function loadGamemaster() {
 }
 
 function downloadGamemaster() {
+	console.info('downloading new gamemaster.json');
+
 	var url = "https://raw.githubusercontent.com/pvpoke/pvpoke/master/src/data/gamemaster.json";
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
