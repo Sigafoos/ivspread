@@ -103,9 +103,9 @@ function loadGamemaster() {
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState == XMLHttpRequest.DONE) {
 			var resp = JSON.parse(xhr.responseText);
-			if (!commit || !!gamemaster || (resp && resp.sha && resp.sha != commit)) {
+			if (!commit || !gamemaster || (resp[0] && resp[0].sha && resp[0].sha != commit)) {
 				downloadGamemaster();
-				localStorage.setItem('commit', resp.sha);
+				localStorage.setItem('commit', resp[0].sha);
 				return;
 			}
 			loadPage();
